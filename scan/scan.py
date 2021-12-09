@@ -47,7 +47,7 @@ class dbConnection:
         if self.cursor.rowcount >= 1:
             return result
         else:
-            return Falsez
+            return False
 
     def insertData(self,uid,picturePath) :
         stmt = "INSERT INTO data_id (user_id,picture) VALUES (%s, %s);"

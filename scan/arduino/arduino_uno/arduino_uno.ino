@@ -8,6 +8,7 @@
 const int doorLock = 8;
 const int RST_PIN = 9;
 const int SS_PIN = 10;
+const int transmit = 2;
 
 MFRC522 rfid(SS_PIN, RST_PIN);
 int serNum[4];
@@ -24,6 +25,9 @@ void setup() {
 
   pinMode(doorLock, OUTPUT);
   digitalWrite(doorLock, HIGH);
+
+  pinMode(transmit,OUTPUT);
+  digitalWrite(transmit,LOW);
 
   lcd.print("RFID READY");
   lcd.clear();
@@ -74,17 +78,18 @@ bool readCard() {
   if (! rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) {
     return false;
   }
+  digitalWrite(transmit,HIGH);
   for (byte i = 0; i < rfid.uid.size; i++) {
     serNum[i] = rfid.uid.uidByte[i];
     Serial.print(serNum[i]);
   }
   Serial.println("");
   rfid.PICC_HaltA();
+  digitalWrite(transmit,LOW);
   return true;
 }
 
 void cardSuccess(String nama) {
-  delay(100);
   digitalWrite(doorLock, HIGH);
   lcd.clear();
   lcd.setCursor (0, 0);

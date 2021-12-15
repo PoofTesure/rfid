@@ -16,7 +16,7 @@ from pyzbar import pyzbar
 
 class Arduino:
     def __init__(self, port):
-        self.ser = serial.Serial(port, 9600,timeout=1)
+        self.ser = serial.Serial(port, 38400,timeout=1)
 
     def read(self):
         if self.ser.in_waiting > 0:
@@ -24,8 +24,12 @@ class Arduino:
             print("Id yang terscan : " + line)
             return line
 
+
     def write(self, line):
-        self.ser.write(line)
+            self.ser.write(line)
+    
+    def flush(self):
+        self.flush()
         
 
 
@@ -61,12 +65,6 @@ class dbConnection:
             self.cursor.execute(stmt)
         except Exception as Argument:
             print(Argument)
-            #Create log file
-            f = open("/home/pi/rfid/scan/error.log","a")
-            currentDate = datetime.datetime.now().strftime("%y-%m-%d_%H.%M.%S")
-
-            f.write(currentDate + " " + traceback.format_exc() + "\n")
-            f.close()
             return
         result = self.cursor.fetchone()
         print(result)
@@ -206,12 +204,14 @@ def createThread(scanner):
 def main_loop(scanner):
     if __name__ == "__main__":
         try:
-            arduino = Arduino(port='/dev/scan' + str(scanner))
-            cap = Camera("/dev/cam" + str(scanner))
+            arduino = Arduino(port="/dev/ttyUSB0")
+            cap = Camera("/dev/video0")
             read1 = readMode()
+            #arduino.flush()
             while True:
                 database = dbConnection(user='admin',password='FaFen542')
                 if read1.status == 1:
+                    time.sleep(0.1)
                     arduino.write("readmode".encode('utf-8'))
                     while read1.status == 1:
                         ID = arduino.read()
@@ -225,10 +225,12 @@ def main_loop(scanner):
                     #print(giveAccess)
                     if giveAccess:
                         print("Selamat Datang " + giveAccess[1])
+                        time.sleep(0.4)
                         arduino.write(bytes("1,"+giveAccess[1],encoding='utf-8'))
                         rel_path = cap.take_picture()
                         database.insertData(uid=str(giveAccess[0]),picturePath=rel_path)
                     else:
+                        time.sleep(0.1)
                         arduino.write(bytes("0",encoding='utf-8'))
                 #print(cap.barcode)
                 if cap.otpstatus:
@@ -237,10 +239,12 @@ def main_loop(scanner):
                     if result:
                         print(result)
                         print("OTP Success")
+                        time.sleep(0.2)
                         arduino.write(bytes("1,"+str(cap.barcode),encoding='utf-8'))
                         rel_path = cap.take_picture()
                         database.insertData(uid=str(result[2]),picturePath=rel_path)
                     else:
+                        time.sleep(0.1)
                         arduino.write(bytes("0",encoding='utf-8'))
                     cap.otpstatus = False
         except Exception as Argument:
@@ -251,6 +255,7 @@ def main_loop(scanner):
 
             f.write(currentDate + " " + traceback.format_exc() + "\n")
             f.close()
+        time.sleep(0.5)
 
 if __name__ == "__main__":
     
@@ -261,6 +266,7 @@ if __name__ == "__main__":
     cctv_num = find('cam*.txt', cctvpath)
     cctv = cctv_cred(*cctv_num)
 
+    createThread(0)
     
     for num in range(len(arduino_num)):
         print('scan' + str(num))

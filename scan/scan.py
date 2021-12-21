@@ -13,6 +13,7 @@ import serial.tools.list_ports
 import fnmatch
 import traceback
 from pyzbar import pyzbar
+import sys
 
 class Arduino:
     def __init__(self, port):
@@ -20,9 +21,12 @@ class Arduino:
 
     def read(self):
         if self.ser.in_waiting > 0:
-            line = self.ser.readline().decode('ascii').rstrip()
-            print("Id yang terscan : " + line)
-            return line
+            try:
+                line = self.ser.readline().decode('ascii').rstrip()
+                print("Id yang terscan : " + line)
+                return line
+            except Exception as Argument:
+                print(Argument)
 
 
     def write(self, line):
@@ -204,8 +208,8 @@ def createThread(scanner):
 def main_loop(scanner):
     if __name__ == "__main__":
         try:
-            arduino = Arduino(port="/dev/ttyUSB0")
-            cap = Camera("/dev/video0")
+            arduino = Arduino(port="/dev/scan"+scanner)
+            cap = Camera("/dev/video"+scanner)
             read1 = readMode()
             #arduino.flush()
             while True:
@@ -225,7 +229,7 @@ def main_loop(scanner):
                     #print(giveAccess)
                     if giveAccess:
                         print("Selamat Datang " + giveAccess[1])
-                        time.sleep(0.4)
+                        time.sleep(0.05)
                         arduino.write(bytes("1,"+giveAccess[1],encoding='utf-8'))
                         rel_path = cap.take_picture()
                         database.insertData(uid=str(giveAccess[0]),picturePath=rel_path)
@@ -259,16 +263,9 @@ def main_loop(scanner):
 
 if __name__ == "__main__":
     
-    arduino_num = scan_arduino()
-    print(arduino_num)
+    arduino_name = sys.argv
+    print(sys.argv[1])
 
-    cctvpath = Path(__file__).parent
-    cctv_num = find('cam*.txt', cctvpath)
-    cctv = cctv_cred(*cctv_num)
+    main_loop(sys.argv[1])
 
-    createThread(0)
-    
-    for num in range(len(arduino_num)):
-        print('scan' + str(num))
-        createThread(num)
     print("Ready")

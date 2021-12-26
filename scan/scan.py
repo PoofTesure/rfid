@@ -209,10 +209,10 @@ def main_loop(scanner):
     if __name__ == "__main__":
         try:
             arduino = Arduino(port="/dev/"+scanner)
-            #if '0' in scanner:
-            #    cap = Camera(0)
-            #else if '1' in scanner:
-            #    cap = Camera(1)
+            if '0' in scanner:
+                cap = Camera(0)
+            else if '1' in scanner:
+                cap = Camera(1)
             read1 = readMode()
             cap = Camera(0)
             #arduino.flush()
@@ -233,12 +233,12 @@ def main_loop(scanner):
                     #print(giveAccess)
                     if giveAccess:
                         print("Selamat Datang " + giveAccess[1])
-                        time.sleep(0.1)
+                        time.sleep(0.05)
                         arduino.write(bytes("1,"+giveAccess[1],encoding='utf-8'))
                         rel_path = cap.take_picture()
                         database.insertData(uid=str(giveAccess[0]),picturePath=rel_path)
                     else:
-                        time.sleep(0.1)
+                        time.sleep(0.05)
                         arduino.write(bytes("0",encoding='utf-8'))
                 #print(cap.barcode)
                 if cap.otpstatus:

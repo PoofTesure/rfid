@@ -17,7 +17,7 @@ int serNum[4];
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(38400);
   SPI.begin();
   lcd.init();
   lcd.backlight();

@@ -17,11 +17,14 @@ int serNum[4];
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(38400);
   SPI.begin();
   lcd.init();
   lcd.backlight();
   rfid.PCD_Init();
+
+  pinMode(transmit,OUTPUT);
+  digitalWrite(transmit,LOW);
 
   pinMode(doorLock, OUTPUT);
   digitalWrite(doorLock, HIGH);
@@ -49,16 +52,26 @@ void loop() {
   }
   if (readCard() == true) {
     while (true) {
+      digitalWrite(transmit,LOW);
       if (Serial.available() > 0) {
         String incomingData = Serial.readString();
         if (incomingData.substring(0, 1) == "1") {
           digitalWrite(doorLock, LOW);
+          digitalWrite(transmit,HIGH);
+          Serial.println("Input intact");
           cardSuccess(incomingData.substring(2));
           break;
         }
-        else {
+        else if(incomingData.substring(0, 1) == "0") {
+          digitalWrite(transmit,HIGH);
+          Serial.println("Input intact");
           cardFailed();
           break;
+        }
+        else{
+          digitalWrite(transmit,HIGH);
+          Serial.println("Corrupt input");
+          
         }
       }
     }
@@ -81,9 +94,11 @@ bool readCard() {
   digitalWrite(transmit,HIGH);
   for (byte i = 0; i < rfid.uid.size; i++) {
     serNum[i] = rfid.uid.uidByte[i];
+    digitalWrite(transmit,HIGH);
     Serial.print(serNum[i]);
   }
   Serial.println("");
+  delay(100);
   rfid.PICC_HaltA();
   digitalWrite(transmit,LOW);
   return true;

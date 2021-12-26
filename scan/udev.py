@@ -17,10 +17,8 @@ def set_udev():
         ser_path = variable.get()
         compare = str(port.device) + " - " + str(port.description)
         print(port.device)
-        if compare == ser_path:
-            print("True")
+        if compare == ser_path and port.serial_number:
             ser_path = port.serial_number
-            print(ser_path)
             ser_name = entry.get()
             query = "ACTION==\"add\", ATTRS{serial}==\"" + ser_path + "\"" +",SYMLINK+=\""+ ser_name + "\""
             path = "/etc/udev/rules.d/101-com.rules"

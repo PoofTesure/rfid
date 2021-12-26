@@ -57,21 +57,12 @@ void loop() {
         String incomingData = Serial.readString();
         if (incomingData.substring(0, 1) == "1") {
           digitalWrite(doorLock, LOW);
-          digitalWrite(transmit,HIGH);
-          Serial.println("Input intact");
           cardSuccess(incomingData.substring(2));
           break;
         }
-        else if(incomingData.substring(0, 1) == "0") {
-          digitalWrite(transmit,HIGH);
-          Serial.println("Input intact");
+        else {
           cardFailed();
           break;
-        }
-        else{
-          digitalWrite(transmit,HIGH);
-          Serial.println("Corrupt input");
-          
         }
       }
     }
@@ -91,14 +82,14 @@ bool readCard() {
   if (! rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) {
     return false;
   }
+  delay(10);
   digitalWrite(transmit,HIGH);
   for (byte i = 0; i < rfid.uid.size; i++) {
     serNum[i] = rfid.uid.uidByte[i];
-    digitalWrite(transmit,HIGH);
     Serial.print(serNum[i]);
   }
   Serial.println("");
-  delay(100);
+  delay(10);
   rfid.PICC_HaltA();
   digitalWrite(transmit,LOW);
   return true;

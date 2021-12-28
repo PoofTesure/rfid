@@ -210,12 +210,14 @@ def main_loop(scanner):
         try:
             arduino = Arduino(port="/dev/"+scanner)
             if '0' in scanner:
-                cap = Camera(0)
-            else if '1' in scanner:
-                cap = Camera(1)
+                cap = Camera("/dev/video0")
+                print('0')
+            elif '1' in scanner:
+                cap = Camera("/dev/video2")
+                print('1')
             read1 = readMode()
-            cap = Camera(0)
-            #arduino.flush()
+            #cap = Camera(cctv)
+            arduino.write("0".encode('utf-8'))
             while True:
                 database = dbConnection(user='admin',password='FaFen542')
                 if read1.status == 1:
@@ -269,6 +271,7 @@ if __name__ == "__main__":
     
     arduino_name = sys.argv
     print(sys.argv[1])
+    #print(sys.argv[2])
 
     main_loop(sys.argv[1])
 

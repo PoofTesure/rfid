@@ -17,17 +17,17 @@ int serNum[4];
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 void setup() {
-  Serial.begin(38400);
-  SPI.begin();
-  lcd.init();
-  lcd.backlight();
-  rfid.PCD_Init();
+  Serial.begin(38400);  //Start serial begin
+  SPI.begin();          //Start SPI
+  lcd.init(); //Start lcd lib
+  lcd.backlight(); //Init backlight
+  rfid.PCD_Init(); //Init scanner
 
-  pinMode(transmit,OUTPUT);
-  digitalWrite(transmit,LOW);
+  pinMode(transmit,OUTPUT);  //Set pin transmit as output
+  digitalWrite(transmit,LOW); //Set transmit to low, listen to serial
 
-  pinMode(doorLock, OUTPUT);
-  digitalWrite(doorLock, HIGH);
+  pinMode(doorLock, OUTPUT);  //Set pin doorLock as output
+  digitalWrite(doorLock, LOW);  //Set relay to shut down (off)
 
   pinMode(transmit,OUTPUT);
   digitalWrite(transmit,LOW);
@@ -39,24 +39,24 @@ void setup() {
 
 void loop() {
   lcd_idle();
-  if(Serial.available() > 0){
-    String incomingData = Serial.readString();
-    if(incomingData == "readmode"){
+  if(Serial.available() > 0){     //Check serial if there's any input, mainly for webserver requesting rfid uid for updating database
+    String incomingData = Serial.readString(); //Read incoming data
+    if(incomingData == "readmode"){ //If incoming data come as string with values == readmode, give id data to webserver to update database, data got sent through serial
       if(readCard() == true){
       }
     }
-    else if (incomingData.substring(0,1) == "1"){
-      digitalWrite(doorLock, LOW);
+    else if (incomingData.substring(0,1) == "1"){ //Read incoming data if first char is 1 then activate relay and lcd routine
+      digitalWrite(doorLock, HIGH);
       cardSuccess(incomingData.substring(2));
     }
   }
-  if (readCard() == true) {
+  if (readCard() == true) { //read rfid uid and send to server
     while (true) {
-      digitalWrite(transmit,LOW);
+      digitalWrite(transmit,LOW); //listen to serial
       if (Serial.available() > 0) {
-        String incomingData = Serial.readString();
-        if (incomingData.substring(0, 1) == "1") {
-          digitalWrite(doorLock, LOW);
+        String incomingData = Serial.readString(); //read serial
+        if (incomingData.substring(0, 1) == "1") { ////Read incoming data if first char is 1 then activate relay and lcd routine
+          digitalWrite(doorLock, HIGH);
           cardSuccess(incomingData.substring(2));
           break;
         }
@@ -79,31 +79,31 @@ void lcd_idle() {
 
 bool readCard() {
   rfid.PCD_Init();
-  if (! rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) {
+  if (! rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) { //Check if a new card scanned
     return false;
   }
   delay(10);
-  digitalWrite(transmit,HIGH);
-  for (byte i = 0; i < rfid.uid.size; i++) {
+  digitalWrite(transmit,HIGH); //Send serial
+  for (byte i = 0; i < rfid.uid.size; i++) { //loop for as many as rfid uid size
     serNum[i] = rfid.uid.uidByte[i];
     Serial.print(serNum[i]);
   }
   Serial.println("");
   delay(10);
   rfid.PICC_HaltA();
-  digitalWrite(transmit,LOW);
+  digitalWrite(transmit,LOW);//Listen to serial
   return true;
 }
 
 void cardSuccess(String nama) {
-  digitalWrite(doorLock, HIGH);
+  //digitalWrite(doorLock, HIGH);
   lcd.clear();
   lcd.setCursor (0, 0);
   lcd.print(F(" Akses diterima "));
   lcd.setCursor (0, 1);
   lcd.print(nama);
   lcd.setCursor (4, 1);
-  delay(1000);
+  delayMicroseconds(10000);
   //digitalWrite(doorLock, HIGH);
   lcd.setCursor (0, 0);
   lcd.print(F(" Silahkan Masuk "));

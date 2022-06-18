@@ -17,28 +17,28 @@ import sys
 
 class Arduino:
     def __init__(self, port):
-        self.ser = serial.Serial(port, 38400,timeout=1)
+        self.ser = serial.Serial(port, 38400,timeout=1) #Initialize serial port
 
     def read(self):
         if self.ser.in_waiting > 0:
             try:
-                line = self.ser.readline().decode('ascii').rstrip()
-                print("Id yang terscan : " + line)
+                line = self.ser.readline().decode('ascii').rstrip() #Parse serial
+                print("Id yang terscan : " + line) #Print id to console
                 return line
             except Exception as Argument:
                 print(Argument)
 
 
-    def write(self, line):
+    def write(self, line): #Send data to arduino
             self.ser.write(line)
     
-    def flush(self):
+    def flush(self): #Flush serial port
         self.flush()
         
 
 
 class dbConnection:
-    def __init__(self,user,password,database="rfid",host="localhost"):
+    def __init__(self,user,password,database="rfid",host="localhost"): #Initalize connection to mysql
         self.db = mysql.connector.connect(
             host = host,
             user = user,
@@ -49,15 +49,16 @@ class dbConnection:
         self.db.commit()
 
     def checkID(self,line):
-        self.db.commit()
+        self.db.commit() #Refresh snapshot
         self.cursor.execute("SELECT id, name FROM id_rfid WHERE rfid_uid=" + line)
-        result = self.cursor.fetchone()
+        result = self.cursor.fetchone() #Find id if null return false
         if self.cursor.rowcount >= 1:
             return result
         else:
             return False
 
-    def insertData(self,uid,picturePath) :
+    def insertData(self,uid,picturePath) : #Insert data to database
+    
         stmt = "INSERT INTO data_id (user_id,picture) VALUES (%s, %s);"
         self.cursor.execute(stmt,(uid[0],picturePath))
         self.db.commit()
@@ -218,8 +219,8 @@ def main_loop(scanner):
             read1 = readMode()
             #cap = Camera(cctv)
             arduino.write("0".encode('utf-8'))
+            database = dbConnection(user='admin',password='FaFen542')
             while True:
-                database = dbConnection(user='admin',password='FaFen542')
                 if read1.status == 1:
                     time.sleep(0.1)
                     arduino.write("readmode".encode('utf-8'))
@@ -237,7 +238,7 @@ def main_loop(scanner):
                         print("Selamat Datang " + giveAccess[1])
                         time.sleep(0.05)
                         arduino.write(bytes("1,"+giveAccess[1],encoding='utf-8'))
-                        rel_path = cap.take_picture()
+                        rel_path = "0"
                         database.insertData(uid=str(giveAccess[0]),picturePath=rel_path)
                     else:
                         time.sleep(0.05)

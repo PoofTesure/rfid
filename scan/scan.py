@@ -209,17 +209,10 @@ def main_loop(scanner):
     if __name__ == "__main__":
         try:
             arduino = Arduino(port="/dev/"+scanner)
-            if '0' in scanner:
-                cap = Camera("/dev/video0")
-                print('0')
-            elif '1' in scanner:
-                cap = Camera("/dev/video2")
-                print('1')
             read1 = readMode()
-            #cap = Camera(cctv)
             arduino.write("0".encode('utf-8'))
+            database = dbConnection(user='admin',password='FaFen542')
             while True:
-                database = dbConnection(user='admin',password='FaFen542')
                 if read1.status == 1:
                     time.sleep(0.1)
                     arduino.write("readmode".encode('utf-8'))
@@ -237,34 +230,30 @@ def main_loop(scanner):
                         print("Selamat Datang " + giveAccess[1])
                         time.sleep(0.05)
                         arduino.write(bytes("1,"+giveAccess[1],encoding='utf-8'))
-                        rel_path = cap.take_picture()
+                        rel_path = "Test"
                         database.insertData(uid=str(giveAccess[0]),picturePath=rel_path)
                     else:
                         time.sleep(0.05)
                         arduino.write(bytes("0",encoding='utf-8'))
                 #print(cap.barcode)
-                if cap.otpstatus:
-                    print (cap.barcode)
-                    result = database.requestOTP(cap.barcode)
-                    if result:
-                        print(result)
-                        print("OTP Success")
-                        time.sleep(0.2)
-                        arduino.write(bytes("1,"+str(cap.barcode),encoding='utf-8'))
-                        rel_path = cap.take_picture()
-                        database.insertData(uid=str(result[2]),picturePath=rel_path)
-                    else:
-                        time.sleep(0.1)
-                        arduino.write(bytes("0",encoding='utf-8'))
-                    cap.otpstatus = False
+                #if cap.otpstatus:
+                #    print (cap.barcode)
+                #    result = database.requestOTP(cap.barcode)
+                #    if result:
+                #        print(result)
+                #        print("OTP Success")
+                #        time.sleep(0.2)
+                #        arduino.write(bytes("1,"+str(cap.barcode),encoding='utf-8'))
+                #        rel_path = cap.take_picture()
+                #        database.insertData(uid=str(result[2]),picturePath=rel_path)
+                #    else:
+                #        time.sleep(0.1)
+                #        arduino.write(bytes("0",encoding='utf-8'))
+                #    cap.otpstatus = False
         except Exception as Argument:
-            print(Argument)
-            #Create log file
-            f = open("/home/pi/rfid/scan/error.log","a")
-            currentDate = datetime.datetime.now().strftime("%y-%m-%d_%H.%M.%S")
-
-            f.write(currentDate + " " + traceback.format_exc() + "\n")
-            f.close()
+            print(Argument,file=open("/home/pi/Desktop/error.log","a"))
+            time.sleep(0.5)
+            os.system("sudo reboot")
         time.sleep(0.5)
 
 if __name__ == "__main__":

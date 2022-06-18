@@ -1,9 +1,9 @@
 <?php
 
-    require 'connect.php';
+    require 'connect.php'; #Connect database
 
-    #$maindata = json_decode(file_get_contents(realpath('var/www/html/data.json')));
     print_r(realpath('var/www/html/data.json'));
+    
     function captureCamera(){
         $data = array(
             'capture'=> 1,

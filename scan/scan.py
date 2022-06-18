@@ -17,28 +17,48 @@ import sys
 
 class Arduino:
     def __init__(self, port):
+<<<<<<< HEAD
         self.ser = serial.Serial(port, 38400,timeout=1) #Initialize serial port
+=======
+        self.ser = serial.Serial(port, 38400,timeout=1) #Start serial port, port retrieved from udev
+>>>>>>> 178783d23cbf7720f2d6bfa5b631b131a931ffff
 
     def read(self):
-        if self.ser.in_waiting > 0:
+        if self.ser.in_waiting > 0: #Listen to serial
             try:
                 line = self.ser.readline().decode('ascii').rstrip() #Parse serial
+<<<<<<< HEAD
                 print("Id yang terscan : " + line) #Print id to console
+=======
+                print("Id yang terscan : " + line)
+>>>>>>> 178783d23cbf7720f2d6bfa5b631b131a931ffff
                 return line
             except Exception as Argument:
                 print(Argument)
 
 
+<<<<<<< HEAD
     def write(self, line): #Send data to arduino
             self.ser.write(line)
     
     def flush(self): #Flush serial port
         self.flush()
+=======
+    def write(self, line):
+            self.ser.write(line) #Send data through serial
+    
+    def flush(self):
+        self.flush() #Flush serial
+>>>>>>> 178783d23cbf7720f2d6bfa5b631b131a931ffff
         
 
 
 class dbConnection:
+<<<<<<< HEAD
     def __init__(self,user,password,database="rfid",host="localhost"): #Initalize connection to mysql
+=======
+    def __init__(self,user,password,database="rfid",host="localhost"): # Initialize mysql connection
+>>>>>>> 178783d23cbf7720f2d6bfa5b631b131a931ffff
         self.db = mysql.connector.connect(
             host = host,
             user = user,
@@ -50,20 +70,29 @@ class dbConnection:
 
     def checkID(self,line):
         self.db.commit() #Refresh snapshot
+<<<<<<< HEAD
         self.cursor.execute("SELECT id, name FROM id_rfid WHERE rfid_uid=" + line)
         result = self.cursor.fetchone() #Find id if null return false
+=======
+        self.cursor.execute("SELECT id, name FROM id_rfid WHERE rfid_uid=" + line) #Find id from arduino in database
+        result = self.cursor.fetchone()
+>>>>>>> 178783d23cbf7720f2d6bfa5b631b131a931ffff
         if self.cursor.rowcount >= 1:
             return result
         else:
             return False
 
+<<<<<<< HEAD
     def insertData(self,uid,picturePath) : #Insert data to database
     
+=======
+    def insertData(self,uid,picturePath) : #Insert picture data
+>>>>>>> 178783d23cbf7720f2d6bfa5b631b131a931ffff
         stmt = "INSERT INTO data_id (user_id,picture) VALUES (%s, %s);"
         self.cursor.execute(stmt,(uid[0],picturePath))
         self.db.commit()
     
-    def requestOTP(self,otp):
+    def requestOTP(self,otp): #Request otp
         self.db.commit()
         stmt = f"SELECT otp_code, active_for, user_id FROM otp WHERE otp_code={otp};"
         try:
@@ -89,7 +118,7 @@ class Camera:
     last_ready = None
     lock = Lock()
 
-    def __init__(self, rtsp_link):
+    def __init__(self, rtsp_link): #Initialize rtsp connection
         self.barcode = 0
         self.new_barcode = 0
         self.otpstatus = False
